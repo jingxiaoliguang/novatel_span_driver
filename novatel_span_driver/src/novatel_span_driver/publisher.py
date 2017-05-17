@@ -89,7 +89,7 @@ class NovatelPublisher(object):
         # Topic publishers
         self.pub_imu = rospy.Publisher('imu/data', Imu, queue_size=1)
         self.pub_odom = rospy.Publisher('navsat/odom', Odometry, queue_size=1)
-        self.pub_origin = rospy.Publisher('navsat/origin', Pose, queue_size=1)
+        self.pub_origin = rospy.Publisher('navsat/origin', Pose, queue_size=1, latch=True)
         self.pub_navsatfix = rospy.Publisher('navsat/fix', NavSatFix, queue_size=1)
 
         if self.publish_tf:
@@ -210,7 +210,6 @@ class NovatelPublisher(object):
         TWIST_COVAR[0] = pow(2, inspvax.east_velocity_std)
         TWIST_COVAR[7] = pow(2, inspvax.north_velocity_std)
         TWIST_COVAR[14] = pow(2, inspvax.up_velocity_std)
-        #odom.twist.twist.angular = imu.angular_velocity
         odom.twist.covariance = TWIST_COVAR
 
         self.pub_odom.publish(odom)
@@ -229,7 +228,7 @@ class NovatelPublisher(object):
     def corrimudata_handler(self, corrimudata):
         # TODO: Work out these covariances properly. Logs provide covariances in local frame, not body
         imu = Imu()
-        imu.header.stamp == rospy.Time.now()
+        imu.header.stamp = rospy.Time.now()
         imu.header.frame_id = self.base_frame
 
         # Populate orientation field with one from inspvax message.
