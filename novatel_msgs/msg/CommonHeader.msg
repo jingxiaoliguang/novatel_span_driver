@@ -15,7 +15,7 @@ uint8 idle_time
 uint8 time_status
 
 uint16 gps_week
-uint32 gps_week_seconds
+uint32 gps_week_milliseconds
 
 # Table 3 in the SPAN on OEM6 manual.
 # See: http://www.novatel.com/assets/Documents/Manuals/OM-20000144UM.pdf#page=13
