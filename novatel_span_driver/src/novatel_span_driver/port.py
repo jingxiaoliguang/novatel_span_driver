@@ -39,6 +39,29 @@ import serial
 import struct
 from cStringIO import StringIO
 
+from time import strftime, localtime
+
+class DumpableSock:
+    def __init__(self, sock, path = None):
+        self.sock = sock
+
+        path = rospy.get_param('~dump_path', False)
+        if path is None:
+            path = './' + strftime('%Y-%m-%d-%H-%M-%S', localtime()) + '.nvtbin'
+        self.fd = open(path,'wb')
+
+    def __del__(self):
+        self.fd.close()
+        # print 'File CLOSED'
+
+    def recv(self, length):
+        data = self.sock.recv(length)
+        self.fd.write(data)
+        return data
+
+    def send(self, data):
+        self.sock.send(data)
+
 
 class Port(threading.Thread):
 
@@ -49,7 +72,7 @@ class Port(threading.Thread):
 
     def __init__(self, sock, **opts):
         super(Port, self).__init__()
-        self.sock = sock
+        self.sock = DumpableSock(sock)
         self.opts = opts
         self.daemon = False
         self.finish = threading.Event()
