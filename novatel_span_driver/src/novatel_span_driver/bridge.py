@@ -192,6 +192,7 @@ def configure_receiver(port):
         rospy.loginfo("Sending %i user-specified initialization commands to SPAN system." % len(commands))
         for cmd in commands:
             port.send(cmd + ' ' + str(commands[cmd]) + '\r\n')
+            rospy.logerr(cmd + ' ' + str(commands[cmd]))
 
 
 def shutdown():
