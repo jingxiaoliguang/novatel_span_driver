@@ -2,8 +2,8 @@
 Changelog for package novatel_span_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+101.0.1 (2017-10-08)
+--------------------
 * update with dumpable sock and short header msg
 * sock can now dump received data to file
 * improved to support novatel usb and onnew log_request option

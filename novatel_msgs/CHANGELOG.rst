@@ -2,8 +2,8 @@
 Changelog for package novatel_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+101.0.1 (2017-10-08)
+--------------------
 * added missing msg
 * update with dumpable sock and short header msg
 * Contributors: Bo Li
