@@ -2,8 +2,8 @@
 Changelog for package novatel_span_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+101.0.2 (2017-10-16)
+--------------------
 * now driver can be used republish to recorded raw msg
 * Contributors: mfour
 
