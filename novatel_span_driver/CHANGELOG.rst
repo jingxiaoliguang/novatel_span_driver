@@ -2,8 +2,8 @@
 Changelog for package novatel_span_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-101.0.3 (2017-10-28)
---------------------
+Forthcoming
+-----------
 * accept command array param
 * fixed offline
 * Contributors: Bo Li
