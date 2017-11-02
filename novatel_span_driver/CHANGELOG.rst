@@ -2,8 +2,8 @@
 Changelog for package novatel_span_driver
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+101.0.3 (2017-11-02)
+--------------------
 * Revert "101.0.3"
   This reverts commit 9a770a73b2e886a8eb834e51d81b2279bc27f12b.
 * 101.0.3
