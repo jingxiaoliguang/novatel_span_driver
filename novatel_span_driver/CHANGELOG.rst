@@ -4,6 +4,14 @@ Changelog for package novatel_span_driver
 
 Forthcoming
 -----------
+* Revert "101.0.3"
+  This reverts commit 9a770a73b2e886a8eb834e51d81b2279bc27f12b.
+* 101.0.3
+* updated changelog
+* accept command array param
+* fixed offline
+* Contributors: Bo Li
+
 * accept command array param
 * fixed offline
 * Contributors: Bo Li
