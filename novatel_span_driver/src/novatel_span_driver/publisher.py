@@ -94,6 +94,9 @@ class NovatelPublisher(object):
         self.pub_origin = rospy.Publisher('navsat/origin', Pose, queue_size=1, latch=True)
         self.pub_navsatfix = rospy.Publisher('navsat/fix', NavSatFix, queue_size=1)
 
+        # add bestgnsspos publisher
+        self.pub_gnsspos = rospy.Publisher("navsatfix/gnss", NavSatFix, queue_size=1)
+
         if self.publish_tf:
             self.tf_broadcast = tf.TransformBroadcaster()
 
@@ -107,6 +110,8 @@ class NovatelPublisher(object):
         rospy.Subscriber('novatel_data/corrimudata', CORRIMUDATA, self.corrimudata_handler)
         rospy.Subscriber('novatel_data/inscov', INSCOV, self.inscov_handler)
         rospy.Subscriber('novatel_data/inspvax', INSPVAX, self.inspvax_handler)
+
+        rospy.Subscriber("novatel_data/bestgnsspos", BESTPOS, self.bestgnsspos_handler)
 
     def bestpos_handler(self, bestpos):
         navsat = NavSatFix()
@@ -267,3 +272,69 @@ class NovatelPublisher(object):
     def inscov_handler(self, inscov):
         # TODO: Supply this data in the IMU and Odometry messages.
         pass
+
+    def bestgnsspos_handler(self, bestgnsspos):
+        navsat_gnss = NavSatFix()
+
+        gps_sec = bestgnsspos.header.gps_week * 7 * 24 * 3600 + \
+                  1e-3 * bestgnsspos.header.gps_week_milliseconds
+        unix_sec = unix_time_from_gps(gps_sec)
+
+        navsat_gnss.header.stamp = rospy.Time(unix_sec)
+        navsat_gnss.header.frame_id = self.odom_frame
+
+        # Assume GPS - this isn't exposed
+        navsat_gnss.status.service = NavSatStatus.SERVICE_GPS
+
+        position_type_to_status = {
+            BESTPOS.POSITION_TYPE_NONE: NavSatStatus.STATUS_NO_FIX,
+            BESTPOS.POSITION_TYPE_FIXED: NavSatStatus.STATUS_FIX,
+            BESTPOS.POSITION_TYPE_FIXEDHEIGHT: NavSatStatus.STATUS_FIX,
+            BESTPOS.POSITION_TYPE_FLOATCONV: NavSatStatus.STATUS_FIX,
+            BESTPOS.POSITION_TYPE_WIDELANE: NavSatStatus.STATUS_FIX,
+            BESTPOS.POSITION_TYPE_NARROWLANE: NavSatStatus.STATUS_FIX,
+            BESTPOS.POSITION_TYPE_DOPPLER_VELOCITY: NavSatStatus.STATUS_FIX,
+            BESTPOS.POSITION_TYPE_SINGLE: NavSatStatus.STATUS_FIX,
+            BESTPOS.POSITION_TYPE_PSRDIFF: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_WAAS: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_PROPAGATED: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_OMNISTAR: NavSatStatus.STATUS_SBAS_FIX,
+            BESTPOS.POSITION_TYPE_L1_FLOAT: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_IONOFREE_FLOAT: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_NARROW_FLOAT: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_L1_INT: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_WIDE_INT: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_NARROW_INT: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_RTK_DIRECT_INS: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_INS_SBAS: NavSatStatus.STATUS_SBAS_FIX,
+            BESTPOS.POSITION_TYPE_INS_PSRSP: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_INS_PSRDIFF: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_INS_RTKFLOAT: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_INS_RTKFIXED: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_INS_OMNISTAR: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_INS_OMNISTAR_HP: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_INS_OMNISTAR_XP: NavSatStatus.STATUS_GBAS_FIX,
+            BESTPOS.POSITION_TYPE_OMNISTAR_HP: NavSatStatus.STATUS_SBAS_FIX,
+            BESTPOS.POSITION_TYPE_OMNISTAR_XP: NavSatStatus.STATUS_SBAS_FIX,
+            BESTPOS.POSITION_TYPE_PPP_CONVERGING: NavSatStatus.STATUS_SBAS_FIX,
+            BESTPOS.POSITION_TYPE_PPP: NavSatStatus.STATUS_SBAS_FIX,
+            BESTPOS.POSITION_TYPE_INS_PPP_CONVERGING: NavSatStatus.STATUS_SBAS_FIX,
+            BESTPOS.POSITION_TYPE_INS_PPP: NavSatStatus.STATUS_SBAS_FIX,
+        }
+
+        navsat_gnss.status.status = position_type_to_status.get(bestgnsspos.position_type,
+                                                                NavSatStatus.STATUS_NO_FIX)
+
+        # Position in degrees.
+        navsat_gnss.latitude = bestgnsspos.latitude
+        navsat_gnss.longitude = bestgnsspos.longitude
+
+        # Altitude in metres.
+        navsat_gnss.altitude = bestgnsspos.altitude
+        navsat_gnss.position_covariance[0] = pow(2, bestgnsspos.latitude)
+        navsat_gnss.position_covariance[4] = pow(2, bestgnsspos.longitude_std)
+        navsat_gnss.position_covariance[8] = pow(2, bestgnsspos.altitude)
+        navsat_gnss.position_covariance_type = NavSatFix.COVARIANCE_TYPE_DIAGONAL_KNOWN
+
+        # ship ito
+        self.pub_gnsspos.publish(navsat_gnss)
