@@ -19,6 +19,8 @@ add_message_files(
   INSCOV.msg
   INSPVAX.msg 
   RAWIMUS.msg 
+  BESTGNSSVEL.msg
+  GNSSInfo.msg
 )
 
 generate_messages(
